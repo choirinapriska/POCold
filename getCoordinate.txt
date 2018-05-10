@@ -1,0 +1,108 @@
+function [output] = getCoordinate( list,frame, is_show ) 
+
+    cur_x = [1;2;3;4;5;6;7;8;9];
+    rep_x = [-4;-3;-2;-1;0;1;2;3;4];
+
+    cur_y = [1;2;3;4;5;6;7;8;9];
+    rep_y = [4;3;2;1;0;-1;-2;-3;-4];
+    
+    for i = 1 : frame-1  
+%         fg1 = figure(1);
+%         hold all;
+%         ah1 = gca;
+%         movegui(fg1,'west')
+        
+%         fg2 = figure(2);
+%         hold all;
+%         ah2 = gca;
+%         movegui(fg2,'east')
+        
+        nX = 2;
+        nY = 1;
+        
+        data  = list{i};
+        cData = size(data,1);
+        
+        value{i,1} = num2str(i);        
+        header{1}  = 'Frame';
+       
+        coorQuiver = zeros(1,4);
+        maxX = max(data.BLokX);
+        maxY = max(data.BlokY);
+        
+%         imagesc(ah1,data.ImgBlock{1,1}); title(ah1,['Frame ' num2str(i)]); axis equal; axis tight; axis ij;
+        
+        k = 1;
+        for j = 1 : cData
+            BlokX = data.BLokX(j);
+            BlokY = data.BlokY(j);
+            Blok  = data.Blok_Ke(j);
+            realX = data.RealX(j);
+            realY = data.RealY(j);
+            corX  = data.corX(j);
+            corY  = data.corY(j);
+            pocM  = data.NilaiMaxPOC(j);
+            
+            repX = rep_x(cur_x(realX)); 
+            repY = rep_y(cur_y(realY));
+            
+%             t = text(ah1,corX,corY,num2str(Blok));
+%             t.FontSize = 9;
+           
+            if(strcmp(is_show , 'true'))
+                
+              if repY ~= 0 || repX ~= 0 
+                
+                coorQuiver(1,k) = BlokX;
+                coorQuiver(2,k) = BlokY;
+                coorQuiver(3,k) = repX;
+                coorQuiver(4,k) = repY;
+                
+                disp(['Frame : ' num2str(i) ' | Blok Ke : ' num2str(Blok) ' | UV : ' num2str([repX repY]) ' | XY ' num2str([BlokX BlokY])]);
+                figure(1); text(BlokX, BlokY, num2str(Blok)); hold on;
+                
+                k = k+1;
+              end
+            end
+            
+            if(nX == 2)
+                header{nX}     = ['X' num2str(nY)];
+                header{nX+1}   = ['Y' num2str(nY)];
+                header{nX+2}   = ['POC' num2str(nY)];
+
+                value{i,nX}    = repX;
+                value{i,nX+1}  = repY;
+                value{i,nX+2}  = pocM;
+
+                nX = 2 + nX;
+            else
+
+                header{nX+1}   = ['X' num2str(nY)];
+                header{nX+2}   = ['Y' num2str(nY)];
+                header{nX+3}   = ['POC' num2str(nY)];
+
+                value{i,nX+1}  = repX;
+                value{i,nX+2}  = repY;
+                value{i,nX+3}  = pocM;
+
+                nX = 3 + nX;
+            end
+
+            nY = 1+ nY;   
+        end
+        if(strcmp(is_show , 'true'))   
+            title(['Frame ' num2str(i) char(10) 'Press any key to next frame'] ),
+            if(size(coorQuiver,1) > 1 && size(coorQuiver,2) > 4)
+               quiver(coorQuiver(1,:) ,coorQuiver(2,:) ,coorQuiver(3,:), coorQuiver(4,:));  axis xy;
+            else
+                axis([0 maxX 0 maxY])
+            end
+            hold off;
+            pause;
+            clf;clf;
+        end
+    end
+    
+    output = array2table(value,'VariableNames',header);
+end
+
